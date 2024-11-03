@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Scraper</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .btn:hover {
+            background-color: #218838;
+        }
+
+        table {
+            margin-top: 20px;
+            border-collapse: collapse;
+            width: 80%;
+            text-align: left;
+        }
+
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        table th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Product Information Scraper</h1>
+<button class="btn" onclick="scrapeData()">Scrape Product Data</button>
+
+<table id="productTable">
+    <thead>
+        <tr>
+            <th>Product Name</th>
+            <th>Price</th>
+            <th>Rating</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- Data will be populated here -->
+    </tbody>
+</table>
+
+<script>
+    async function scrapeData() {
+        // Example URL (replace this with your desired e-commerce product page)
+        const url = 'https://fakestoreapi.com/products'; // Fake API for example purposes
+
+        // Fetch the webpage data using Fetch API (CORS restrictions may apply)
+        const response = await fetch(url);
+        const products = await response.json();
+
+        const tableBody = document.querySelector("#productTable tbody");
+        tableBody.innerHTML = ""; // Clear previous results
+
+        // Loop through the products and populate the table
+        products.forEach(product => {
+            const row = document.createElement("tr");
+
+            const nameCell = document.createElement("td");
+            nameCell.textContent = product.title;
+
+            const priceCell = document.createElement("td");
+            priceCell.textContent = `$${product.price}`;
+
+            const ratingCell = document.createElement("td");
+            ratingCell.textContent = product.rating?.rate || 'N/A';
+
+            row.appendChild(nameCell);
+            row.appendChild(priceCell);
+            row.appendChild(ratingCell);
+
+            tableBody.appendChild(row);
+        });
+
+        // After scraping, generate a CSV file and prompt the user to download it
+        downloadCSV(products);
+    }
+
+    // Function to generate and download CSV
+    function downloadCSV(products) {
+        let csvContent = "data:text/csv;charset=utf-8,";
+        csvContent += "Product Name,Price,Rating\n"; // Add the CSV headers
+
+        products.forEach(product => {
+            const row = `${product.title},${product.price},${product.rating?.rate || 'N/A'}`;
+            csvContent += row + "\n";
+        });
+
+        // Create a download link and trigger the download
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "products.csv");
+        document.body.appendChild(link); // Required for Firefox
+        link.click(); // Trigger the download
+        document.body.removeChild(link); // Clean up
+    }
+</script>
+
+</body>
+</html>
